@@ -1,0 +1,32 @@
+pipeline {
+    agent any
+
+    environment {
+		DOCKERHUB_CREDENTIALS=credentials('DockerHub-Cred')
+        DOCKERHUB_USER="ziyadtarek99"
+
+	}
+    stages {
+        stage('Docker Login') {
+            steps {
+                sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+            }
+        }
+        stage('Build & push Dockerfile') {
+            steps {
+                sh """
+                cd gitops-ci/flask-app
+                docker push $DOCKERHUB_USER/app-test:2.0
+                """
+            }
+        }
+        #stage('Run Dockercompose playbook') {
+            steps {
+                sh """
+                cd DevOps-Pipeline-PHP/laravel-app
+                ansible-playbook playbook-dcompose.yml 
+                """
+            }
+        }
+    }
+}
